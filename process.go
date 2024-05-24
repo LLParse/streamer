@@ -69,7 +69,7 @@ func (p Process) Spawn(path, URI string) *exec.Cmd {
 		"-movflags",
 		"frag_keyframe+empty_moov",
 	}
-	if (!p.audio) {
+	if !p.audio {
 		processCommands = append(processCommands, "-an")
 	}
 	processCommands = append(processCommands,

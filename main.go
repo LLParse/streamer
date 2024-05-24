@@ -119,6 +119,7 @@ func (strm *Stream) Start() *sync.WaitGroup {
 					err,
 				)
 				strm.Running = false
+				strm.kill()
 				strm.Mux.Unlock()
 				wg.Done()
 			})
@@ -153,6 +154,7 @@ func (strm *Stream) Start() *sync.WaitGroup {
 				strm.ID,
 			)
 			strm.Running = false
+			strm.kill()
 			strm.Mux.Unlock()
 			wg.Done()
 		})
@@ -194,14 +196,23 @@ func (strm *Stream) Stop() error {
 			}
 		}()
 	}
-	if err := strm.CMD.Process.Kill(); err != nil {
-		if strings.Contains(err.Error(), "process already finished") {
-			return nil
-		}
-		if strings.Contains(err.Error(), "signal: killed") {
-			return nil
-		}
-		return err
-	}
+	strm.kill()
 	return nil
+}
+
+func (strm *Stream) kill() {
+	if strm.CMD != nil && strm.CMD.Process != nil {
+		if err := strm.CMD.Process.Kill(); err != nil {
+			if strings.Contains(err.Error(), "process already finished") {
+				return
+			}
+			if strings.Contains(err.Error(), "signal: killed") {
+				return
+			}
+			logrus.Infof(err.Error(), "process didn't gracefully exit, sending SIGKILL")
+			if err = strm.CMD.Process.Signal(os.Kill); err != nil {
+				logrus.Infof(err.Error(), "process wasn't forcefully killed")
+			}
+		}
+	}
 }
