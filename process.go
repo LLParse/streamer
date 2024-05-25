@@ -92,5 +92,6 @@ func (p Process) Spawn(path, URI string) *exec.Cmd {
 		fmt.Sprintf("%s/index.m3u8", path),
 	)
 	cmd := exec.Command("ffmpeg", processCommands...)
+	logrus.Debugf("%+v command | Process", cmd)
 	return cmd
 }
