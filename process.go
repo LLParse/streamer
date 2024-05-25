@@ -41,9 +41,9 @@ func NewProcess(
 // getHLSFlags are for getting the flags based on the config context
 func (p Process) getHLSFlags() string {
 	if p.keepFiles {
-		return "append_list"
+		return "split_by_time+append_list"
 	}
-	return "delete_segments+append_list"
+	return "delete_segments+split_by_time+append_list"
 }
 
 // Spawn creates a new FFMPEG cmd
@@ -52,7 +52,7 @@ func (p Process) Spawn(path, URI string) *exec.Cmd {
 	processCommands := []string{
 		"-y",
 		"-fflags",
-		"nobuffer",
+		"flush_packets+discardcorrupt+nobuffer",
 		"-rtsp_transport",
 		"tcp",
 		"-i",
@@ -61,11 +61,15 @@ func (p Process) Spawn(path, URI string) *exec.Cmd {
 		"lavfi",
 		"-i",
 		"anullsrc=channel_layout=stereo:sample_rate=44100",
-		"-vsync",
-		"0",
+		"-fps_mode",
+		"cfr",
+		"-fpsmax",
+		"15",
 		"-copyts",
 		"-vcodec",
-		"copy",
+		"libx264",
+		"-crf",
+		"25",
 		"-movflags",
 		"frag_keyframe+empty_moov",
 	}
@@ -80,9 +84,9 @@ func (p Process) Spawn(path, URI string) *exec.Cmd {
 		"-segment_list_flags",
 		"live",
 		"-hls_time",
-		"1",
+		"5",
 		"-hls_list_size",
-		"3",
+		"60",
 		"-hls_segment_filename",
 		fmt.Sprintf("%s/%%d.ts", path),
 		fmt.Sprintf("%s/index.m3u8", path),
