@@ -202,15 +202,18 @@ func (strm *Stream) kill() {
 	if strm.CMD != nil && strm.CMD.Process != nil {
 		if err := strm.CMD.Process.Kill(); err != nil {
 			if strings.Contains(err.Error(), "process already finished") {
+				strm.CMD = nil
 				return
 			}
 			if strings.Contains(err.Error(), "signal: killed") {
+				strm.CMD = nil
 				return
 			}
 			logrus.Infof(err.Error(), "process didn't gracefully exit, sending SIGKILL")
 			if err = strm.CMD.Process.Signal(os.Kill); err != nil {
 				logrus.Infof(err.Error(), "process wasn't forcefully killed")
 			}
+			strm.CMD = nil
 		}
 	}
 }
