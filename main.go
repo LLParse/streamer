@@ -169,9 +169,7 @@ func (strm *Stream) Restart() *sync.WaitGroup {
 		return nil
 	}
 	strm.Mux.Lock()
-	if strm.CMD != nil && strm.CMD.ProcessState != nil {
-		strm.CMD.Process.Kill()
-	}
+	strm.kill()
 	strm.CMD = strm.Process.Spawn(strm.StorePath, strm.OriginalURI)
 	if strm.LoggingOpts.Enabled {
 		strm.CMD.Stderr = strm.Logger
