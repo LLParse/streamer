@@ -49,6 +49,8 @@ func NewStream(
 	storingDirectory string,
 	keepFiles bool,
 	audio bool,
+	hlsTime int,
+	hlsListSize int,
 	loggingOpts ProcessLoggingOpts,
 	waitTimeOut time.Duration,
 ) (*Stream, string) {
@@ -59,7 +61,7 @@ func NewStream(
 		logrus.Error(err)
 		return nil, ""
 	}
-	process := NewProcess(keepFiles, audio)
+	process := NewProcess(keepFiles, audio, hlsTime, hlsListSize)
 	cmd := process.Spawn(path, URI)
 
 	// Create nil pointer in case logging is not enabled

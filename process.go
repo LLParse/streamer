@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 )
@@ -25,8 +26,10 @@ type ProcessLoggingOpts struct {
 
 // Process is the main type for creating new processes
 type Process struct {
-	keepFiles bool
-	audio     bool
+	keepFiles   bool
+	audio       bool
+	hlsTime     int
+	hlsListSize int
 }
 
 // Type check
@@ -36,8 +39,10 @@ var _ IProcess = (*Process)(nil)
 func NewProcess(
 	keepFiles bool,
 	audio bool,
+	hlsTime int,
+	hlsListSize int,
 ) *Process {
-	return &Process{keepFiles, audio}
+	return &Process{keepFiles, audio, hlsTime, hlsListSize}
 }
 
 // getHLSFlags are for getting the flags based on the config context
@@ -84,9 +89,9 @@ func (p Process) Spawn(path, URI string) *exec.Cmd {
 		"-segment_list_flags",
 		"live",
 		"-hls_time",
-		"5",
+		strconv.Itoa(p.hlsTime),
 		"-hls_list_size",
-		"60",
+		strconv.Itoa(p.hlsListSize),
 		"-hls_segment_filename",
 		fmt.Sprintf("%s/%%d.ts", path),
 		fmt.Sprintf("%s/index.m3u8", path),
